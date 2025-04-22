@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .player {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .player:hover {
+            transform: translateY(-5px);
+        }
+
+        .player h2 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .player.winner {
+            border: 3px solid #48bb78;
+            background: linear-gradient(to bottom right, #ffffff, #ebfbee);
+            animation: winner-pulse 2s infinite;
+        }
+
+        .player.draw {
+            border: 3px solid #ecc94b;
+            background: linear-gradient(to bottom right, #ffffff, #fefcbf);
+            animation: draw-pulse 2s infinite;
+        }
+
+        @keyframes winner-pulse {
+            0% { box-shadow: 0 5px 15px rgba(72, 187, 120, 0.1); }
+            50% { box-shadow: 0 5px 25px rgba(72, 187, 120, 0.3); }
+            100% { box-shadow: 0 5px 15px rgba(72, 187, 120, 0.1); }
+        }
+
+        @keyframes draw-pulse {
+            0% { box-shadow: 0 5px 15px rgba(236, 201, 75, 0.1); }
+            50% { box-shadow: 0 5px 25px rgba(236, 201, 75, 0.3); }
+            100% { box-shadow: 0 5px 15px rgba(236, 201, 75, 0.1); }
+        }
+
+        .dice {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background: white;
+            border: 3px solid #4a5568;
+            border-radius: 15px;
+            display: grid;
+            grid-template-areas: 
+                "a b c"
+                "d e f"
+                "g h i";
+            padding: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dot {
+            width: 15px;
+            height: 15px;
+            background: #2d3748;
+            border-radius: 50%;
+            margin: auto;
+            box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+            transform: none;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.win {
+            color: #48bb78;
+            background: #ebfbee;
+        }
+
+        .result.draw {
+            color: #ecc94b;
+            background: #fefcbf;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(0deg) scale(1); }
+            75% { transform: rotate(10deg) scale(1.1); }
+        }
+
+        .rolling {
+            animation: shake 0.4s infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .dice {
+                width: 80px;
+                height: 80px;
+            }
+
+            .dot {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        /* Smooth transition for all animations */
+        .player, .dice, button, .result {
+            transition: all 0.3s ease;
+        }
+
+        /* Glass morphism effect for player cards */
+        .player {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dice Game</h1>
+        <div class="game-board">
+            <div class="player" id="player1">
+                <h2>Player 1</h2>
+                <div class="dice" id="dice1"></div>
+                <p>Value: <span class="value">1</span></p>
+            </div>
+            <div class="player" id="player2">
+                <h2>Player 2</h2>
+                <div class="dice" id="dice2"></div>
+                <p>Value: <span class="value">1</span></p>
+            </div>
+            <div class="player" id="player3">
+                <h2>Player 3</h2>
+                <div class="dice" id="dice3"></div>
+                <p>Value: <span class="value">1</span></p>
+            </div>
+            <div class="player" id="player4">
+                <h2>Player 4</h2>
+                <div class="dice" id="dice4"></div>
+                <p>Value: <span class="value">1</span></p>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="rollButton">Roll Dice</button>
+        </div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function createDice(value) {
+            const dots = [];
+            switch(value) {
+                case 1:
+                    dots.push(5);
+                    break;
+                case 2:
+                    dots.push(1, 9);
+                    break;
+                case 3:
+                    dots.push(1, 5, 9);
+                    break;
+                case 4:
+                    dots.push(1, 3, 7, 9);
+                    break;
+                case 5:
+                    dots.push(1, 3, 5, 7, 9);
+                    break;
+                case 6:
+                    dots.push(1, 3, 4, 6, 7, 9);
+                    break;
+            }
+            
+            let html = '';
+            for(let i = 1; i <= 9; i++) {
+                if(dots.includes(i)) {
+                    html += '<div class="dot"></div>';
+                } else {
+                    html += '<div></div>';
+                }
+            }
+            return html;
+        }
+
+        const rollButton = document.getElementById('rollButton');
+        const players = document.querySelectorAll('.player');
+        const result = document.getElementById('result');
+
+        rollButton.addEventListener('click', () => {
+            rollButton.disabled = true;
+            result.textContent = '';
+            result.className = 'result';
+            
+            players.forEach(player => {
+                player.classList.remove('winner', 'draw');
+                const dice = player.querySelector('.dice');
+                dice.classList.add('rolling');
+            });
+
+            setTimeout(() => {
+                const values = [];
+                players.forEach((player, index) => {
+                    const value = Math.floor(Math.random() * 6) + 1;
+                    values.push(value);
+                    const dice = player.querySelector('.dice');
+                    const valueSpan = player.querySelector('.value');
+                    dice.innerHTML = createDice(value);
+                    valueSpan.textContent = value;
+                    dice.classList.remove('rolling');
+                });
+
+                const maxValue = Math.max(...values);
+                const winners = values.reduce((acc, val, idx) => {
+                    if(val === maxValue) acc.push(idx + 1);
+                    return acc;
+                }, []);
+
+                if(winners.length === 1) {
+                    const winner = winners[0];
+                    players[winner-1].classList.add('winner');
+                    result.textContent = `Player ${winner} wins!`;
+                    result.classList.add('win');
+                } else {
+                    winners.forEach(winner => {
+                        players[winner-1].classList.add('draw');
+                    });
+                    result.textContent = `Draw between Players ${winners.join(' & ')}!`;
+                    result.classList.add('draw');
+                }
+
+                rollButton.disabled = false;
+            }, 1000);
+        });
+
+        // Initialize dice
+        players.forEach(player => {
+            const dice = player.querySelector('.dice');
+            dice.innerHTML = createDice(1);
+        });
+    </script>
+</body>
+</html>
